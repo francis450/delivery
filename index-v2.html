@@ -700,11 +700,11 @@
                 time: "45 minutes ago"
             }
         ];
-        
+
         let currentOrder = null;
         let currentFilter = 'all';
         let deferredPrompt = null;
-        
+
         function renderOrders() {
             const ordersList = document.getElementById('ordersList');
             ordersList.innerHTML = '';
@@ -752,7 +752,7 @@
             
             updateStats();
         }
-        
+
         function updateStats() {
             const pending = orders.filter(o => o.status === 'pending').length;
             const delivered = orders.filter(o => o.status === 'delivered').length;
@@ -762,7 +762,7 @@
             document.getElementById('deliveredCount').textContent = delivered;
             document.getElementById('totalAmount').textContent = total.toLocaleString();
         }
-        
+
         function filterOrders(filter) {
             currentFilter = filter;
             
@@ -774,7 +774,7 @@
             
             renderOrders();
         }
-        
+
         function openPaymentModal(order) {
             if (order.status === 'delivered') return;
             
@@ -832,12 +832,12 @@
             
             modal.style.display = 'block';
         }
-        
+
         function closeModal() {
             document.getElementById('paymentModal').style.display = 'none';
             currentOrder = null;
         }
-        
+
         function initiatePayment() {
             const phoneNumber = document.getElementById('phoneNumber').value;
             if (!phoneNumber || phoneNumber.length < 12) {
@@ -867,7 +867,7 @@
                 currentOrder.paymentTime = new Date().toLocaleString();
             }, 3000);
         }
-        
+
         function markDelivered() {
             if (currentOrder) {
                 // Update order status
@@ -885,7 +885,7 @@
                 showNotification('Order marked as delivered successfully!', 'success');
             }
         }
-        
+
         function showNotification(message, type = 'info') {
             const notification = document.createElement('div');
             notification.style.cssText = `
@@ -909,7 +909,7 @@
                 notification.remove();
             }, 3000);
         }
-        
+
         function simulateNewOrder() {
             const customers = ['Alice Wanjiru', 'John Ochieng', 'Faith Muthoni', 'David Kiptoo', 'Rose Akinyi'];
             const products = [
@@ -941,80 +941,119 @@
             renderOrders();
             showNotification('🆕 New order received!', 'info');
         }
-        
-        // Service Worker registration
-        if ('serviceWorker' in navigator && window.location.protocol !== 'file:') {
-            window.addEventListener('load', () => {
-                // Check if we're on HTTPS or localhost
-                const isSecure = window.location.protocol === 'https:' || 
-                               window.location.hostname === 'localhost' || 
-                               window.location.hostname === '127.0.0.1';
+
+        // Fixed ServiceWorker registration
+        function registerServiceWorker() {
+            if (!('serviceWorker' in navigator)) {
+                console.log('ServiceWorker not supported');
+                return;
+            }
+
+            // Check if we're on a supported protocol
+            const isSecure = window.location.protocol === 'https:' || 
+                        window.location.hostname === 'localhost' || 
+                        window.location.hostname === '127.0.0.1';
+            
+            if (!isSecure) {
+                console.log('ServiceWorker requires HTTPS or localhost');
+                return;
+            }
+
+            // Try to register a simple inline ServiceWorker using data URL
+            const swCode = `
+                const CACHE_NAME = 'deliverypay-v1';
+                const urlsToCache = [
+                    './',
+                    './index.html'
+                ];
                 
-                if (!isSecure) {
-                    console.log('ServiceWorker requires HTTPS or localhost');
-                    return;
-                }
+                self.addEventListener('install', event => {
+                    console.log('ServiceWorker installing...');
+                    event.waitUntil(
+                        caches.open(CACHE_NAME)
+                            .then(cache => {
+                                console.log('Opened cache');
+                                return cache.addAll(urlsToCache);
+                            })
+                            .catch(err => {
+                                console.log('Cache add failed:', err);
+                            })
+                    );
+                    self.skipWaiting();
+                });
                 
-                const swCode = `
-                    const CACHE_NAME = 'deliverypay-v1';
-                    
-                    self.addEventListener('install', event => {
-                        console.log('ServiceWorker installing...');
-                        self.skipWaiting();
-                    });
-                    
-                    self.addEventListener('activate', event => {
-                        console.log('ServiceWorker activating...');
-                        event.waitUntil(self.clients.claim());
-                    });
-                    
-                    self.addEventListener('fetch', event => {
-                        // Only handle same-origin requests
-                        if (event.request.url.startsWith(self.location.origin)) {
-                            event.respondWith(
-                                caches.match(event.request)
-                                    .then(response => {
-                                        return response || fetch(event.request);
-                                    })
-                                    .catch(() => {
-                                        // Return a fallback for navigation requests
-                                        if (event.request.mode === 'navigate') {
-                                            return new Response('Offline - Please check your connection', {
-                                                status: 200,
-                                                headers: { 'Content-Type': 'text/html' }
-                                            });
-                                        }
-                                    })
+                self.addEventListener('activate', event => {
+                    console.log('ServiceWorker activating...');
+                    event.waitUntil(
+                        caches.keys().then(cacheNames => {
+                            return Promise.all(
+                                cacheNames.map(cacheName => {
+                                    if (cacheName !== CACHE_NAME) {
+                                        console.log('Deleting old cache:', cacheName);
+                                        return caches.delete(cacheName);
+                                    }
+                                })
                             );
-                        }
-                    });
-                `;
-                
-                try {
-                    const blob = new Blob([swCode], { type: 'application/javascript' });
-                    const swUrl = URL.createObjectURL(blob);
-                    
-                    navigator.serviceWorker.register(swUrl)
-                        .then(registration => {
-                            console.log('ServiceWorker registration successful:', registration.scope);
-                            
-                            // Clean up the blob URL after registration
-                            setTimeout(() => {
-                                URL.revokeObjectURL(swUrl);
-                            }, 1000);
                         })
-                        .catch(error => {
-                            console.log('ServiceWorker registration failed:', error);
-                            URL.revokeObjectURL(swUrl);
+                    );
+                    self.clients.claim();
+                });
+                
+                self.addEventListener('fetch', event => {
+                    // Only handle GET requests for same origin
+                    if (event.request.method !== 'GET' || !event.request.url.startsWith(self.location.origin)) {
+                        return;
+                    }
+                    
+                    event.respondWith(
+                        caches.match(event.request)
+                            .then(response => {
+                                // Return cached version or fetch from network
+                                if (response) {
+                                    return response;
+                                }
+                                return fetch(event.request);
+                            })
+                            .catch(() => {
+                                // Return a fallback for navigation requests when offline
+                                if (event.request.mode === 'navigate') {
+                                    return new Response(
+                                        '<!DOCTYPE html><html><head><title>Offline</title></head><body><h1>You are offline</h1><p>Please check your connection and try again.</p></body></html>',
+                                        {
+                                            status: 200,
+                                            headers: { 'Content-Type': 'text/html' }
+                                        }
+                                    );
+                                }
+                            })
+                    );
+                });
+            `;
+
+            try {
+                // Create a data URL instead of blob URL for better compatibility
+                const dataUrl = 'data:application/javascript;base64,' + btoa(swCode);
+                
+                navigator.serviceWorker.register(dataUrl)
+                    .then(registration => {
+                        console.log('ServiceWorker registration successful:', registration.scope);
+                        
+                        registration.addEventListener('updatefound', () => {
+                            console.log('New ServiceWorker version found');
                         });
-                } catch (error) {
-                    console.log('ServiceWorker blob creation failed:', error);
-                }
-            });
-        } else if (window.location.protocol === 'file:') {
-            console.log('ServiceWorker not supported on file:// protocol');
+                    })
+                    .catch(error => {
+                        console.log('ServiceWorker registration failed:', error);
+                        // Fallback: try registering without ServiceWorker
+                        console.log('Running without ServiceWorker');
+                    });
+                    
+            } catch (error) {
+                console.log('ServiceWorker registration failed:', error);
+                // App will still work without ServiceWorker
+            }
         }
-        
+
         // PWA Install prompt
         window.addEventListener('beforeinstallprompt', (e) => {
             console.log('beforeinstallprompt event fired');
@@ -1026,7 +1065,7 @@
                 showInstallBanner();
             }
         });
-        
+
         // Handle successful app installation
         window.addEventListener('appinstalled', (e) => {
             console.log('PWA was installed');
@@ -1039,7 +1078,7 @@
                 banner.remove();
             }
         });
-        
+
         function showInstallBanner() {
             // Create install banner
             const installBanner = document.createElement('div');
@@ -1096,44 +1135,46 @@
                 }
             }, 15000);
         }
-        
+
         // For iOS Safari - show manual install instructions
         function isIOS() {
             return /iPad|iPhone|iPod/.test(navigator.userAgent);
         }
-        
+
         function isInStandaloneMode() {
             return window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
         }
-        
+
         // Show iOS install prompt if needed
-        if (isIOS() && !isInStandaloneMode()) {
-            setTimeout(() => {
-                if (!document.querySelector('.install-banner')) {
-                    const iosPrompt = document.createElement('div');
-                    iosPrompt.className = 'install-banner';
-                    iosPrompt.innerHTML = `
-                        <div>
-                            <div style="font-weight: bold; margin-bottom: 5px;">📱 Install DeliveryPay</div>
-                            <div style="font-size: 11px; opacity: 0.9;">
-                                Tap <strong>Share</strong> → <strong>Add to Home Screen</strong>
+        function showIOSInstallPrompt() {
+            if (isIOS() && !isInStandaloneMode()) {
+                setTimeout(() => {
+                    if (!document.querySelector('.install-banner')) {
+                        const iosPrompt = document.createElement('div');
+                        iosPrompt.className = 'install-banner';
+                        iosPrompt.innerHTML = `
+                            <div>
+                                <div style="font-weight: bold; margin-bottom: 5px;">📱 Install DeliveryPay</div>
+                                <div style="font-size: 11px; opacity: 0.9;">
+                                    Tap <strong>Share</strong> → <strong>Add to Home Screen</strong>
+                                </div>
                             </div>
-                        </div>
-                        <button class="install-btn" onclick="this.parentElement.remove()">
-                            Got it
-                        </button>
-                    `;
-                    document.body.appendChild(iosPrompt);
-                    
-                    setTimeout(() => {
-                        if (iosPrompt.parentNode) {
-                            iosPrompt.remove();
-                        }
-                    }, 12000);
-                }
-            }, 3000);
+                            <button class="install-btn" onclick="this.parentElement.remove()">
+                                Got it
+                            </button>
+                        `;
+                        document.body.appendChild(iosPrompt);
+                        
+                        setTimeout(() => {
+                            if (iosPrompt.parentNode) {
+                                iosPrompt.remove();
+                            }
+                        }, 12000);
+                    }
+                }, 3000);
+            }
         }
-        
+
         // Close modal when clicking outside
         window.onclick = function(event) {
             const modal = document.getElementById('paymentModal');
@@ -1141,10 +1182,16 @@
                 closeModal();
             }
         }
-        
+
         // Initialize the app
         document.addEventListener('DOMContentLoaded', function() {
             renderOrders();
+            
+            // Register ServiceWorker
+            registerServiceWorker();
+            
+            // Show iOS install prompt if applicable
+            showIOSInstallPrompt();
             
             // Add demo controls
             const demoControls = document.createElement('div');
@@ -1160,7 +1207,7 @@
             `;
             document.body.appendChild(demoControls);
         });
-        
+
         // Add keyboard shortcuts
         document.addEventListener('keydown', function(e) {
             if (e.key === 'Escape') {
