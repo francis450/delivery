@@ -1,0 +1,983 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DeliveryPay - Order Management</title>
+    <link rel="manifest" href="data:application/json;base64,eyJuYW1lIjoiRGVsaXZlcnlQYXkiLCJzaG9ydF9uYW1lIjoiRGVsaXZlcnlQYXkiLCJkaXNwbGF5Ijoic3RhbmRhbG9uZSIsInN0YXJ0X3VybCI6Ii8iLCJ0aGVtZV9jb2xvciI6IiMwMDc2NTMiLCJiYWNrZ3JvdW5kX2NvbG9yIjoiI2ZmZmZmZiIsImljb25zIjpbeyJzcmMiOiJkYXRhOmltYWdlL3N2Zyt4bWw7YmFzZTY0LFBITjJaeUI0Yld4dWN6MGlhSFIwY0RvdkwzZDNkeTUzTXk1dmNtY3ZNakF3TUM5emRtY2lJSGRwWkhSb1BTSTBNaUlnYUdWcFoyaDBQU0kwTWlJK1BHTnBjbU5zWlNCamVEMGlNakVpSUdONVBTSXlNU0lnY2owaTlpSWdabWxzYkQwaUl6QXdOelkxTXlJdlBqeDBaWGgwSUhnOUlqa3VOU0lnZVQwaU16QWlJR1pwYkd3OUlpTm1abVppWmlJZ1ptOXVkQzFtWVcxcGJIazlJbk5oYm5NdGMyVnlhV1lpUGtRZ1VHRjVQQzkwWlhoMFBqeDBaWGgwSUhnOUlqa3VOU0lnZVQwaU0yZ2lJR1pwYkd3OUlpTm1abVppWmlJZ1ptOXVkQzFtWVcxcGJIazlJbk5oYm5NdGMyVnlhV1lpUGsxUVpYTmhQQzkwWlhoMFBqd3ZjM1puUGc9PSIsInNpemVzIjoiNDJ4NDIiLCJ0eXBlIjoiaW1hZ2Uvc3ZnK3htbCJ9XX0=">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+        
+        .container {
+            max-width: 420px;
+            margin: 0 auto;
+            background: white;
+            min-height: 100vh;
+            position: relative;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #00C851 0%, #007E33 100%);
+            color: white;
+            padding: 20px;
+            text-align: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .header h1 {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+        
+        .header .subtitle {
+            opacity: 0.9;
+            font-size: 14px;
+        }
+        
+        .main-content {
+            padding: 20px;
+        }
+        
+        .stats-row {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+        
+        .stat-card {
+            flex: 1;
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            padding: 15px;
+            border-radius: 12px;
+            text-align: center;
+            border: 1px solid #dee2e6;
+        }
+        
+        .stat-number {
+            font-size: 24px;
+            font-weight: bold;
+            color: #007E33;
+            margin-bottom: 5px;
+        }
+        
+        .stat-label {
+            font-size: 12px;
+            color: #6c757d;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .section-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: #2c3e50;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .order-card {
+            background: white;
+            border: 2px solid #e9ecef;
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 15px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .order-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+            border-color: #007E33;
+        }
+        
+        .order-card.pending {
+            border-left: 4px solid #ffc107;
+        }
+        
+        .order-card.delivered {
+            border-left: 4px solid #28a745;
+            opacity: 0.7;
+        }
+        
+        .order-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 15px;
+        }
+        
+        .order-id {
+            font-weight: bold;
+            font-size: 16px;
+            color: #2c3e50;
+        }
+        
+        .order-status {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .status-pending {
+            background: #fff3cd;
+            color: #856404;
+        }
+        
+        .status-delivered {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .customer-info {
+            margin-bottom: 15px;
+        }
+        
+        .customer-name {
+            font-weight: 600;
+            font-size: 15px;
+            margin-bottom: 5px;
+        }
+        
+        .customer-details {
+            font-size: 13px;
+            color: #6c757d;
+            line-height: 1.4;
+        }
+        
+        .order-summary {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        
+        .items-count {
+            color: #6c757d;
+            font-size: 14px;
+        }
+        
+        .order-total {
+            font-size: 18px;
+            font-weight: bold;
+            color: #007E33;
+        }
+        
+        .order-actions {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 14px;
+            flex: 1;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #007E33 0%, #00C851 100%);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0, 126, 51, 0.3);
+        }
+        
+        .btn-secondary {
+            background: #f8f9fa;
+            color: #6c757d;
+            border: 1px solid #dee2e6;
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            animation: fadeIn 0.3s ease;
+        }
+        
+        .modal-content {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            border-radius: 20px;
+            width: 90%;
+            max-width: 400px;
+            max-height: 90vh;
+            overflow-y: auto;
+            animation: slideUp 0.3s ease;
+        }
+        
+        .modal-header {
+            background: linear-gradient(135deg, #007E33 0%, #00C851 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 20px 20px 0 0;
+            text-align: center;
+        }
+        
+        .modal-body {
+            padding: 25px;
+        }
+        
+        .order-details {
+            margin-bottom: 25px;
+        }
+        
+        .detail-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid #f1f3f4;
+        }
+        
+        .detail-row:last-child {
+            border-bottom: none;
+            font-weight: bold;
+            color: #007E33;
+            font-size: 18px;
+        }
+        
+        .items-list {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 15px;
+            margin: 15px 0;
+        }
+        
+        .item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 0;
+            border-bottom: 1px solid #e9ecef;
+        }
+        
+        .item:last-child {
+            border-bottom: none;
+        }
+        
+        .item-info {
+            flex: 1;
+        }
+        
+        .item-name {
+            font-weight: 600;
+            margin-bottom: 2px;
+        }
+        
+        .item-details {
+            font-size: 12px;
+            color: #6c757d;
+        }
+        
+        .item-price {
+            font-weight: bold;
+            color: #007E33;
+        }
+        
+        .payment-section {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            border-radius: 12px;
+            padding: 20px;
+            margin: 20px 0;
+            text-align: center;
+        }
+        
+        .mpesa-logo {
+            width: 60px;
+            height: 40px;
+            margin: 0 auto 15px;
+            background: #00C851;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 12px;
+        }
+        
+        .payment-amount {
+            font-size: 24px;
+            font-weight: bold;
+            color: #007E33;
+            margin-bottom: 15px;
+        }
+        
+        .payment-btn {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #00C851 0%, #007E33 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-bottom: 15px;
+        }
+        
+        .payment-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 200, 81, 0.3);
+        }
+        
+        .payment-btn:disabled {
+            background: #6c757d;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .close-btn {
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            background: none;
+            border: none;
+            font-size: 24px;
+            color: white;
+            cursor: pointer;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .close-btn:hover {
+            background: rgba(255,255,255,0.2);
+        }
+        
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+        
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #007E33;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
+        }
+        
+        .success-animation {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+        
+        .checkmark {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: #28a745;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 30px;
+            margin: 0 auto 15px;
+            animation: scaleIn 0.5s ease;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        @keyframes slideUp {
+            from { transform: translate(-50%, -30%); opacity: 0; }
+            to { transform: translate(-50%, -50%); opacity: 1; }
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        @keyframes scaleIn {
+            0% { transform: scale(0); }
+            100% { transform: scale(1); }
+        }
+        
+        .phone-input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            font-size: 16px;
+            margin-bottom: 15px;
+            transition: border-color 0.3s ease;
+        }
+        
+        .phone-input:focus {
+            outline: none;
+            border-color: #007E33;
+        }
+        
+        @media (max-width: 480px) {
+            .container {
+                max-width: 100%;
+            }
+            
+            .main-content {
+                padding: 15px;
+            }
+            
+            .stats-row {
+                gap: 10px;
+            }
+            
+            .stat-card {
+                padding: 12px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>DeliveryPay</h1>
+            <div class="subtitle">Order Management System</div>
+        </div>
+        
+        <div class="main-content">
+            <div class="stats-row">
+                <div class="stat-card">
+                    <div class="stat-number" id="pendingCount">5</div>
+                    <div class="stat-label">Pending</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="deliveredCount">12</div>
+                    <div class="stat-label">Delivered</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">KSh <span id="totalAmount">24,750</span></div>
+                    <div class="stat-label">Today's Total</div>
+                </div>
+            </div>
+            
+            <div class="section-title">
+                📋 Active Orders
+            </div>
+            
+            <div id="ordersList">
+                <!-- Orders will be dynamically generated here -->
+            </div>
+        </div>
+    </div>
+    
+    <!-- Payment Modal -->
+    <div id="paymentModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button class="close-btn" onclick="closeModal()">&times;</button>
+                <h2>Order Payment</h2>
+            </div>
+            <div class="modal-body">
+                <div id="orderDetails" class="order-details">
+                    <!-- Order details will be populated here -->
+                </div>
+                
+                <div class="payment-section">
+                    <div class="mpesa-logo">M-PESA</div>
+                    <div class="payment-amount">KSh <span id="paymentAmount">0</span></div>
+                    <input type="tel" id="phoneNumber" class="phone-input" placeholder="Enter customer phone (254...)" maxlength="12">
+                    <button id="paymentBtn" class="payment-btn" onclick="initiatePayment()">
+                        🚀 Send STK Push
+                    </button>
+                    <div style="font-size: 12px; color: #6c757d;">
+                        Customer will receive payment prompt on their phone
+                    </div>
+                </div>
+                
+                <div id="loadingSection" class="loading">
+                    <div class="spinner"></div>
+                    <div>Processing payment...</div>
+                    <div style="font-size: 12px; color: #6c757d; margin-top: 10px;">
+                        Customer should enter PIN on their phone
+                    </div>
+                </div>
+                
+                <div id="successSection" class="success-animation">
+                    <div class="checkmark">✓</div>
+                    <h3 style="color: #28a745; margin-bottom: 10px;">Payment Successful!</h3>
+                    <div style="color: #6c757d; margin-bottom: 20px;">
+                        Transaction ID: <strong id="transactionId"></strong>
+                    </div>
+                    <button class="btn btn-primary" onclick="markDelivered()">
+                        Mark as Delivered
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Sample order data
+        let orders = [
+            {
+                id: "ORD-001",
+                customer: "Sarah Wanjiku",
+                phone: "254712345678",
+                address: "Westlands, Nairobi",
+                items: [
+                    { name: "Premium Coffee Beans", qty: 2, price: 1200 },
+                    { name: "Red Wine - Cabernet", qty: 1, price: 2500 },
+                    { name: "Craft Beer - IPA", qty: 6, price: 300 }
+                ],
+                total: 7300,
+                status: "pending",
+                time: "2 hours ago"
+            },
+            {
+                id: "ORD-002",
+                customer: "James Mwangi",
+                phone: "254798765432",
+                address: "Karen, Nairobi",
+                items: [
+                    { name: "Espresso Machine", qty: 1, price: 15000 },
+                    { name: "Coffee Grinder", qty: 1, price: 3500 }
+                ],
+                total: 18500,
+                status: "pending",
+                time: "1 hour ago"
+            },
+            {
+                id: "ORD-003",
+                customer: "Mary Njeri",
+                phone: "254723456789",
+                address: "Kilimani, Nairobi",
+                items: [
+                    { name: "Whiskey - Single Malt", qty: 1, price: 4500 },
+                    { name: "Wine Glasses Set", qty: 1, price: 2000 }
+                ],
+                total: 6500,
+                status: "pending",
+                time: "30 minutes ago"
+            },
+            {
+                id: "ORD-004",
+                customer: "Peter Kimani",
+                phone: "254756789012",
+                address: "Parklands, Nairobi",
+                items: [
+                    { name: "Cold Brew Coffee", qty: 4, price: 450 },
+                    { name: "Artisan Cookies", qty: 2, price: 600 }
+                ],
+                total: 3000,
+                status: "delivered",
+                time: "4 hours ago"
+            },
+            {
+                id: "ORD-005",
+                customer: "Grace Achieng",
+                phone: "254734567890",
+                address: "CBD, Nairobi",
+                items: [
+                    { name: "Cocktail Mix Pack", qty: 1, price: 3200 },
+                    { name: "Premium Tonic Water", qty: 6, price: 200 }
+                ],
+                total: 4400,
+                status: "pending",
+                time: "45 minutes ago"
+            }
+        ];
+        
+        let currentOrder = null;
+        
+        function renderOrders() {
+            const ordersList = document.getElementById('ordersList');
+            ordersList.innerHTML = '';
+            
+            orders.forEach(order => {
+                const orderCard = document.createElement('div');
+                orderCard.className = `order-card ${order.status}`;
+                orderCard.onclick = () => openPaymentModal(order);
+                
+                const itemsText = order.items.length === 1 ? '1 item' : `${order.items.length} items`;
+                
+                orderCard.innerHTML = `
+                    <div class="order-header">
+                        <div class="order-id">${order.id}</div>
+                        <div class="order-status status-${order.status}">${order.status}</div>
+                    </div>
+                    <div class="customer-info">
+                        <div class="customer-name">${order.customer}</div>
+                        <div class="customer-details">
+                            📱 ${order.phone}<br>
+                            📍 ${order.address}<br>
+                            🕒 ${order.time}
+                        </div>
+                    </div>
+                    <div class="order-summary">
+                        <div class="items-count">${itemsText}</div>
+                        <div class="order-total">KSh ${order.total.toLocaleString()}</div>
+                    </div>
+                    ${order.status === 'pending' ? `
+                        <div class="order-actions">
+                            <button class="btn btn-primary" onclick="event.stopPropagation(); openPaymentModal(orders.find(o => o.id === '${order.id}'))">
+                                💳 Collect Payment
+                            </button>
+                        </div>
+                    ` : ''}
+                `;
+                
+                ordersList.appendChild(orderCard);
+            });
+            
+            updateStats();
+        }
+        
+        function updateStats() {
+            const pending = orders.filter(o => o.status === 'pending').length;
+            const delivered = orders.filter(o => o.status === 'delivered').length;
+            const total = orders.reduce((sum, o) => sum + o.total, 0);
+            
+            document.getElementById('pendingCount').textContent = pending;
+            document.getElementById('deliveredCount').textContent = delivered;
+            document.getElementById('totalAmount').textContent = total.toLocaleString();
+        }
+        
+        function openPaymentModal(order) {
+            if (order.status === 'delivered') return;
+            
+            currentOrder = order;
+            const modal = document.getElementById('paymentModal');
+            const orderDetails = document.getElementById('orderDetails');
+            const paymentAmount = document.getElementById('paymentAmount');
+            const phoneNumber = document.getElementById('phoneNumber');
+            
+            // Reset modal state
+            document.getElementById('loadingSection').style.display = 'none';
+            document.getElementById('successSection').style.display = 'none';
+            document.querySelector('.payment-section').style.display = 'block';
+            document.getElementById('paymentBtn').disabled = false;
+            
+            // Populate order details
+            let itemsHtml = '';
+            order.items.forEach(item => {
+                itemsHtml += `
+                    <div class="item">
+                        <div class="item-info">
+                            <div class="item-name">${item.name}</div>
+                            <div class="item-details">Qty: ${item.qty}</div>
+                        </div>
+                        <div class="item-price">KSh ${(item.price * item.qty).toLocaleString()}</div>
+                    </div>
+                `;
+            });
+            
+            orderDetails.innerHTML = `
+                <div class="detail-row">
+                    <span>Order ID:</span>
+                    <span>${order.id}</span>
+                </div>
+                <div class="detail-row">
+                    <span>Customer:</span>
+                    <span>${order.customer}</span>
+                </div>
+                <div class="detail-row">
+                    <span>Address:</span>
+                    <span>${order.address}</span>
+                </div>
+                <div class="items-list">
+                    <div style="font-weight: bold; margin-bottom: 10px; color: #007E33;">Order Items:</div>
+                    ${itemsHtml}
+                </div>
+                <div class="detail-row">
+                    <span>Total Amount:</span>
+                    <span>KSh ${order.total.toLocaleString()}</span>
+                </div>
+            `;
+            
+            paymentAmount.textContent = order.total.toLocaleString();
+            phoneNumber.value = order.phone;
+            
+            modal.style.display = 'block';
+        }
+        
+        function closeModal() {
+            document.getElementById('paymentModal').style.display = 'none';
+            currentOrder = null;
+        }
+        
+        function initiatePayment() {
+            const phoneNumber = document.getElementById('phoneNumber').value;
+            if (!phoneNumber || phoneNumber.length < 12) {
+                alert('Please enter a valid phone number (254XXXXXXXXX)');
+                return;
+            }
+            
+            // Hide payment section and show loading
+            document.querySelector('.payment-section').style.display = 'none';
+            document.getElementById('loadingSection').style.display = 'block';
+            
+            // Simulate M-Pesa STK Push process
+            setTimeout(() => {
+                // Hide loading and show success
+                document.getElementById('loadingSection').style.display = 'none';
+                document.getElementById('successSection').style.display = 'block';
+                
+                // Generate random transaction ID
+                const transactionId = 'MPX' + Math.random().toString(36).substr(2, 9).toUpperCase();
+                document.getElementById('transactionId').textContent = transactionId;
+                
+                // Store transaction for order
+                currentOrder.transactionId = transactionId;
+                currentOrder.paidAmount = currentOrder.total;
+                currentOrder.paymentTime = new Date().toLocaleString();
+            }, 3000);
+        }
+        
+        function markDelivered() {
+            if (currentOrder) {
+                // Update order status
+                const orderIndex = orders.findIndex(o => o.id === currentOrder.id);
+                if (orderIndex !== -1) {
+                    orders[orderIndex].status = 'delivered';
+                    orders[orderIndex].deliveredTime = new Date().toLocaleString();
+                }
+                
+                // Close modal and refresh
+                closeModal();
+                renderOrders();
+                
+                // Show success message
+                showNotification('Order marked as delivered successfully!', 'success');
+            }
+        }
+        
+        function showNotification(message, type = 'info') {
+            const notification = document.createElement('div');
+            notification.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background: ${type === 'success' ? '#28a745' : '#007E33'};
+                color: white;
+                padding: 15px 20px;
+                border-radius: 8px;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+                z-index: 2000;
+                font-weight: 600;
+                animation: slideIn 0.3s ease;
+            `;
+            notification.textContent = message;
+            
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.remove();
+            }, 3000);
+        }
+        
+        // Close modal when clicking outside
+        window.onclick = function(event) {
+            const modal = document.getElementById('paymentModal');
+            if (event.target === modal) {
+                closeModal();
+            }
+        }
+        
+        // Initialize the app
+        document.addEventListener('DOMContentLoaded', function() {
+            renderOrders();
+            
+            // Add some CSS for the slideIn animation
+            const style = document.createElement('style');
+            style.textContent = `
+                @keyframes slideIn {
+                    from { transform: translateX(100%); opacity: 0; }
+                    to { transform: translateX(0); opacity: 1; }
+                }
+            `;
+            document.head.appendChild(style);
+        });
+        
+        // Service Worker registration for PWA functionality
+        if ('serviceWorker' in navigator) {
+            const swCode = `
+                const CACHE_NAME = 'deliverypay-v1';
+                const urlsToCache = ['/'];
+                
+                self.addEventListener('install', function(event) {
+                    event.waitUntil(
+                        caches.open(CACHE_NAME)
+                            .then(function(cache) {
+                                return cache.addAll(urlsToCache);
+                            })
+                    );
+                });
+                
+                self.addEventListener('fetch', function(event) {
+                    event.respondWith(
+                        caches.match(event.request)
+                            .then(function(response) {
+                                return response || fetch(event.request);
+                            })
+                    );
+                });
+            `;
+            
+            const blob = new Blob([swCode], { type: 'application/javascript' });
+            const swUrl = URL.createObjectURL(blob);
+            
+            navigator.serviceWorker.register(swUrl)
+                .then(function(registration) {
+                    console.log('ServiceWorker registration successful');
+                })
+                .catch(function(err) {
+                    console.log('ServiceWorker registration failed: ', err);
+                });
+        }
+        
+        // Add install prompt for PWA
+        let deferredPrompt;
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            
+            // Show install banner
+            const installBanner = document.createElement('div');
+            installBanner.style.cssText = `
+                position: fixed;
+                bottom: 20px;
+                left: 20px;
+                right: 20px;
+                background: linear-gradient(135deg, #007E33 0%, #00C851 100%);
+                color: white;
+                padding: 15px;
+                border-radius: 12px;
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+                z-index: 1500;
+                animation: slideUp 0.3s ease;
+            `;
+            
+            installBanner.innerHTML = `
+                <div>
+                    <div style="font-weight: bold; margin-bottom: 5px;">Install DeliveryPay</div>
+                    <div style="font-size: 12px; opacity: 0.9;">Add to home screen for quick access</div>
+                </div>
+                <button id="installBtn" style="background: white; color: #007E33; border: none; padding: 8px 16px; border-radius: 6px; font-weight: bold; cursor: pointer;">
+                    Install
+                </button>
+            `;
+            
+            document.body.appendChild(installBanner);
+            
+            // Handle install button click
+            document.getElementById('installBtn').addEventListener('click', () => {
+                deferredPrompt.prompt();
+                deferredPrompt.userChoice.then((choiceResult) => {
+                    if (choiceResult.outcome === 'accepted') {
+                        console.log('User accepted the A2HS prompt');
+                    }
+                    deferredPrompt = null;
+                    installBanner.remove();
+                });
+            });
+            
+            // Auto-hide banner after 10 seconds
+            setTimeout(() => {
+                if (installBanner.parentNode) {
+                    installBanner.remove();
+                }
+            }, 10000);
+        });
+        
+        // Add some demo functionality for real-world simulation
+        function simulateNewOrder() {
+            const newOrder = {
+                id: "ORD-" + String(orders.length + 1).padStart(3, '0'),
+                customer: "New Customer",
+                phone: "254700000000",
+                address: "Demo Address, Nairobi",
+                items: [
+                    { name: "Demo Product", qty: 1, price: 1000 }
+                ],
+                total: 1000,
+                status: "pending",
+                time: "Just now"
+            };
+            
+            orders.unshift(newOrder);
+            renderOrders();
+            showNotification('New order received!', 'info');
+        }
+        
+        // Add demo controls (can be hidden in production)
+        const demoControls = document.createElement('div');
+        demoControls.style.cssText = `
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: rgba(0,0,0,0.8);
+            color: white;
+            padding: 10px;
+            border-radius: 8px;
+            font-size: 12px;
+            z-index: 1000;
+        `;
+        demoControls.innerHTML = `
+            <div style="margin-bottom: 8px; font-weight: bold;">Demo Controls:</div>
+            <button onclick="simulateNewOrder()" style="background: #007E33; color: white; border: none; padding: 5px 10px; border-radius: 4px; margin-right: 5px; cursor: pointer;">
+                + New Order
+            </button>
+            <button onclick="this.parentElement.style.display='none'" style="background: #dc3545; color: white; border: none; padding: 5px 8px; border-radius: 4px; cursor: pointer;">
+                ×
+            </button>
+        `;
+        document.body.appendChild(demoControls);
+    </script>
+</body>
+</html>
