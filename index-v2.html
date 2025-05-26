@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>DeliveryPay - Order Management</title>
-    <link rel="manifest" href="data:application/json;base64,ewogICJuYW1lIjogIkRlbGl2ZXJ5UGF5IiwKICAic2hvcnRfbmFtZSI6ICJEZWxpdmVyeVBheSIsCiAgImRlc2NyaXB0aW9uIjogIk9yZGVyIE1hbmFnZW1lbnQgJiBQYXltZW50IEFwcCIsCiAgInN0YXJ0X3VybCI6ICIuLyIsCiAgImRpc3BsYXkiOiAic3RhbmRhbG9uZSIsCiAgImJhY2tncm91bmRfY29sb3IiOiAiIzAwN0UzMyIsCiAgInRoZW1lX2NvbG9yIjogIiMwMDdFMzMiLAogICJpY29ucyI6IFsKICAgIHsKICAgICAgInNyYyI6ICJkYXRhOmltYWdlL3N2Zyt4bWw7YmFzZTY0LFBITjJaeUIyYVdWM1FtOTRQU0l3SURBZ01qVTJJREkxTmlJZ2VHMXNibk05SW1oMGRIQTZMeTkzZDNjdWR6TXViM0puTHpJd01EQXZjM1puSWo0OGNtVmpkQ0IzYVdSMGFEMGlNalUySWlCb1pXbG5hSFE5SWpJMU5pSWdabWxzYkQwaUl6QXdOMFV6TXlJdlBqeDBaWGgwSUdacGJHdzlJbmRvYVhSbElpQjRQU0l4TWpnaUlIazlJakV5T0NJZ1ptOXVkQzF6YVhwbFBTSXlOQ0lnZEdWNGRDMWhibU5vYjNJOUltMXBaR1JzWlNJK1JGQThMM1JsZUhRK1BDOXpkbWMrIiwKICAgICAgInNpemVzIjogIjI1NngyNTYiLAogICAgICAidHlwZSI6ICJpbWFnZS9zdmcreG1sIgogICAgfQogIF0KfQ==">
+    <link rel="manifest" href="./manifest.json">
     <meta name="theme-color" content="#007E33">
     <link rel="apple-touch-icon" href="data:image/svg+xml;base64,PHN2ZyB2aWV3Qm94PSIwIDAgMjU2IDI1NiIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMjU2IiBoZWlnaHQ9IjI1NiIgZmlsbD0iIzAwN0UzMyIvPjx0ZXh0IGZpbGw9IndoaXRlIiB4PSIxMjgiIHk9IjEyOCIgZm9udC1zaXplPSIyNCIgdGV4dC1hbmNob3I9Im1pZGRsZSI+RFA8L3RleHQ+PC9zdmc+">
     <style>
@@ -975,6 +975,17 @@
             console.log('ServiceWorker not supported on file:// protocol');
         }
         
+        // Handle the beforeinstallprompt event
+        window.addEventListener('beforeinstallprompt', (e) => {
+            console.log('beforeinstallprompt fired');
+            e.preventDefault();
+            deferredPrompt = e;
+            
+            // Show install banner after a short delay
+            setTimeout(() => {
+                showInstallBanner();
+            }, 2000);
+        });
         // Handle successful app installation
         window.addEventListener('appinstalled', (e) => {
             console.log('PWA was installed');
