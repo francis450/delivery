@@ -945,87 +945,35 @@
         // Service Worker registration
         if ('serviceWorker' in navigator && window.location.protocol !== 'file:') {
             window.addEventListener('load', () => {
-                // Check if we're on HTTPS or localhost
-                const isSecure = window.location.protocol === 'https:' || 
-                               window.location.hostname === 'localhost' || 
-                               window.location.hostname === '127.0.0.1';
-                
-                // if (!isSecure) {
-                //     console.log('ServiceWorker requires HTTPS or localhost');
-                //     return;
-                // }
-                
-                const swCode = `
-                    const CACHE_NAME = 'deliverypay-v1';
-                    
-                    self.addEventListener('install', event => {
-                        console.log('ServiceWorker installing...');
-                        self.skipWaiting();
-                    });
-                    
-                    self.addEventListener('activate', event => {
-                        console.log('ServiceWorker activating...');
-                        event.waitUntil(self.clients.claim());
-                    });
-                    
-                    self.addEventListener('fetch', event => {
-                        // Only handle same-origin requests
-                        if (event.request.url.startsWith(self.location.origin)) {
-                            event.respondWith(
-                                caches.match(event.request)
-                                    .then(response => {
-                                        return response || fetch(event.request);
-                                    })
-                                    .catch(() => {
-                                        // Return a fallback for navigation requests
-                                        if (event.request.mode === 'navigate') {
-                                            return new Response('Offline - Please check your connection', {
-                                                status: 200,
-                                                headers: { 'Content-Type': 'text/html' }
-                                            });
-                                        }
-                                    })
-                            );
-                        }
-                    });
-                `;
-                
+                // Check if we're on HTTPS or localhost (already in your code)
+                const isSecure = window.location.protocol === 'https:' ||
+                                window.location.hostname === 'localhost' ||
+                                window.location.hostname === '127.0.0.1';
+
+                if (!isSecure) {
+                    console.log('ServiceWorker requires HTTPS or localhost or 127.0.0.1 for production.');
+                    console.log('Running on file:// protocol for local testing or for GitHub pages should work if in the correct path');
+                    // You can optionally return here if you strictly want to enforce HTTPS/localhost,
+                    // but for GitHub Pages, it will be HTTPS.
+                    // return;
+                }
+
                 try {
-                    const blob = new Blob([swCode], { type: 'application/javascript' });
-                    const swUrl = URL.createObjectURL(blob);
-                    
-                    navigator.serviceWorker.register(swUrl)
+                    // Register the Service Worker directly from its file URL
+                    navigator.serviceWorker.register('./js/service-worker.js') // Assuming service-worker.js is in the root
                         .then(registration => {
                             console.log('ServiceWorker registration successful:', registration.scope);
-                            
-                            // Clean up the blob URL after registration
-                            setTimeout(() => {
-                                URL.revokeObjectURL(swUrl);
-                            }, 1000);
                         })
                         .catch(error => {
                             console.log('ServiceWorker registration failed:', error);
-                            URL.revokeObjectURL(swUrl);
                         });
                 } catch (error) {
-                    console.log('ServiceWorker blob creation failed:', error);
+                    console.log('ServiceWorker registration attempt failed:', error);
                 }
             });
         } else if (window.location.protocol === 'file:') {
             console.log('ServiceWorker not supported on file:// protocol');
         }
-        
-        // PWA Install prompt
-        window.addEventListener('beforeinstallprompt', (e) => {
-            console.log('beforeinstallprompt event fired');
-            e.preventDefault();
-            deferredPrompt = e;
-            
-            // Show install banner only if we don't already have one
-            if (!document.querySelector('.install-banner')) {
-                showInstallBanner();
-            }
-        });
         
         // Handle successful app installation
         window.addEventListener('appinstalled', (e) => {
