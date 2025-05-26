@@ -1,0 +1,21 @@
+{
+  "name": "DeliveryPay",
+  "short_name": "DeliveryPay",
+  "description": "Order Management & Payment App",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#007E33",
+  "theme_color": "#007E33",
+  "icons": [
+    {
+      "src": "data:image/svg+xml;base64,PHN2ZyB2aWV3Qm94PSIwIDAgMjU2IDI1NiIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMjU2IiBoZWlnaHQ9IjI1NiIgZmlsbD0iIzAwN0UzMyIvPjx0ZXh0IGZpbGw9IndoaXRlIiB4PSIxMjgiIHk9IjEyOCIgZm9udC1zaXplPSIyNCIgdGV4dC1hbmNob3I9Im1pZGRsZSI+RFA8L3RleHQ+PC9zdmc+",
+      "sizes": "256x256",
+      "type": "image/svg+xml"
+    },
+    {
+      "src": "data:image/svg+xml;base64,PHN2ZyB2aWV3Qm94PSIwIDAgNTEyIDUxMiIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iNTEyIiBoZWlnaHQ9IjUxMiIgZmlsbD0iIzAwN0UzMyIvPjx0ZXh0IGZpbGw9IndoaXRlIiB4PSIyNTYiIHk9IjI1NiIgZm9udC1zaXplPSI0OCIgdGV4dC1hbmNob3I9Im1pZGRsZSI+RFA8L3RleHQ+PC9zdmc+",
+      "sizes": "512x512",
+      "type": "image/svg+xml"
+    }
+  ]
+}
